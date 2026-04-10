@@ -1,0 +1,12 @@
+{
+  "mrsmith": {
+    "name": "Mr. Smith",
+    "salt": "7eef0ad1683f14bbda7a23ba7b5f6f38",
+    "hash": "1f42b15272a46e54bbbd0a4cfa6fe80c18037634067ca419b6c173afd6ae2beb"
+  },
+  "msjones": {
+    "name": "Ms. Jones",
+    "salt": "d2bd1dd3d0ec645008e19a2fdf2cfc67",
+    "hash": "0da98614a8910f06e88d38296205d3f9d798290e0cb1fac78d3e20bd7fb9778d"
+  }
+}
