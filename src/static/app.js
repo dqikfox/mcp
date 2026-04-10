@@ -1,4 +1,120 @@
 document.addEventListener("DOMContentLoaded", () => {
+  // ── Git-branch animated background ────────────────────────────────
+  (function () {
+    "use strict";
+    const canvas = document.getElementById("git-bg");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+
+    // Speed and geometry
+    const SPEED = 0.5;      // pixels per frame (slow drift upward)
+    const ROW_H = 80;       // vertical gap between commit rows
+    const DOT_R = 5;        // commit dot radius
+
+    // Semi-transparent lime-green palette
+    const COLORS = [
+      "rgba(50,205,50,0.50)",
+      "rgba(0,200,83,0.42)",
+      "rgba(124,252,0,0.36)",
+      "rgba(57,255,20,0.30)",
+      "rgba(0,255,127,0.34)",
+    ];
+
+    // Lane positions as fractions of canvas width
+    const LANE_FRACS = [0.08, 0.20, 0.33, 0.50, 0.67, 0.80, 0.92];
+
+    // The repeating "git graph" segment (by row index)
+    const SEGMENT_ROWS = 30;
+    const lines = [
+      { lane: 3, from: 0,  to: SEGMENT_ROWS }, // main
+      { lane: 1, from: 3,  to: 13 },            // feature-A
+      { lane: 5, from: 8,  to: 17 },            // hotfix
+      { lane: 2, from: 15, to: 25 },            // feature-B
+      { lane: 6, from: 20, to: SEGMENT_ROWS },  // release
+    ];
+
+    // Diagonal connectors: branch-off and merge-back
+    // colorIdx is pre-computed once so we avoid findIndex calls per frame.
+    const connectors = [
+      { fromLane: 3, fromRow: 3,  toLane: 1, toRow: 3,  colorIdx: 0 },
+      { fromLane: 1, fromRow: 13, toLane: 3, toRow: 13, colorIdx: 1 },
+      { fromLane: 3, fromRow: 8,  toLane: 5, toRow: 8,  colorIdx: 0 },
+      { fromLane: 5, fromRow: 17, toLane: 3, toRow: 17, colorIdx: 2 },
+      { fromLane: 3, fromRow: 15, toLane: 2, toRow: 15, colorIdx: 0 },
+      { fromLane: 2, fromRow: 25, toLane: 3, toRow: 25, colorIdx: 3 },
+      { fromLane: 3, fromRow: 20, toLane: 6, toRow: 20, colorIdx: 0 },
+    ];
+
+    // Build commit dot positions (every 3 rows on each active line)
+    const dots = [];
+    lines.forEach((l, i) => {
+      for (let r = l.from; r <= l.to; r += 3) {
+        dots.push({ lane: l.lane, row: r, colorIdx: i });
+      }
+    });
+    connectors.forEach((c) => {
+      dots.push({ lane: c.fromLane, row: c.fromRow, colorIdx: c.colorIdx });
+      dots.push({ lane: c.toLane,   row: c.toRow,   colorIdx: c.colorIdx });
+    });
+
+    const SEGMENT_H = SEGMENT_ROWS * ROW_H;
+    let scroll = 0;
+    let W = 0, H = 0;
+
+    function resize() {
+      W = canvas.width  = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener("resize", resize);
+
+    function lx(lane) { return W * LANE_FRACS[lane]; }
+
+    function drawSegment(yOff) {
+      // Branch lines
+      lines.forEach((l, i) => {
+        ctx.beginPath();
+        ctx.moveTo(lx(l.lane), yOff + l.from * ROW_H);
+        ctx.lineTo(lx(l.lane), yOff + l.to   * ROW_H);
+        ctx.strokeStyle = COLORS[i % COLORS.length];
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      });
+
+      // Diagonal connectors
+      connectors.forEach((c) => {
+        ctx.beginPath();
+        ctx.moveTo(lx(c.fromLane), yOff + c.fromRow * ROW_H);
+        ctx.lineTo(lx(c.toLane),   yOff + c.toRow   * ROW_H);
+        ctx.strokeStyle = COLORS[c.colorIdx % COLORS.length];
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      });
+
+      // Commit dots
+      dots.forEach((d) => {
+        ctx.beginPath();
+        ctx.arc(lx(d.lane), yOff + d.row * ROW_H, DOT_R, 0, Math.PI * 2);
+        ctx.fillStyle = COLORS[d.colorIdx % COLORS.length];
+        ctx.fill();
+      });
+    }
+
+    function frame() {
+      ctx.clearRect(0, 0, W, H);
+      scroll = (scroll + SPEED) % SEGMENT_H;
+      const copies = Math.ceil(H / SEGMENT_H) + 2;
+      for (let i = 0; i < copies; i++) {
+        drawSegment(-scroll + i * SEGMENT_H);
+      }
+      requestAnimationFrame(frame);
+    }
+
+    frame();
+  })();
+
+  // ── Activities app ─────────────────────────────────────────────────
+
   const activitiesList = document.getElementById("activities-list");
   const activitySelect = document.getElementById("activity");
   const signupForm = document.getElementById("signup-form");
