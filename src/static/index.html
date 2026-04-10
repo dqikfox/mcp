@@ -15,6 +15,18 @@
     <main>
       <section id="activities-container">
         <h3>Available Activities</h3>
+        <div id="filters-toolbar">
+          <input type="text" id="search-input" placeholder="Search activities…" aria-label="Search activities" />
+          <select id="category-filter" aria-label="Filter by category">
+            <option value="">All Categories</option>
+          </select>
+          <select id="sort-select" aria-label="Sort activities">
+            <option value="name-asc">Name (A–Z)</option>
+            <option value="name-desc">Name (Z–A)</option>
+            <option value="spots-desc">Most Spots Available</option>
+            <option value="day-asc">Day (Mon → Fri)</option>
+          </select>
+        </div>
         <div id="activities-list">
           <!-- Activities will be loaded here -->
           <p>Loading activities...</p>
