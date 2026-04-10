@@ -2,3 +2,4 @@ fastapi
 uvicorn
 mcp[cli]
 httpx
+python-multipart
